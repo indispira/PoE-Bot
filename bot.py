@@ -9,7 +9,6 @@ port = '5000'
 @app.route('/', methods=['POST'])
 def index(): 
   data = json.loads(request.get_data())
-  print(data)
 
   # FETCH THE ITEM NAME
   item_name = data['conversation']['memory']['item']['raw']
@@ -32,8 +31,7 @@ def index():
   return jsonify( 
     status=200, 
     replies=[{ 
-      'type': 'text', 
-      # 'content': 'Trying to find the price of %s' % (item_name), # r.json()['BTC'], r.json()['USD']), 
+      'type': 'text',
       'content': 'The %s cost %s chaos orbs at the moment.' % (item_name, value),
     }]
   ) 
@@ -44,5 +42,3 @@ def errors():
   return jsonify(status=200) 
  
 app.run(port=int(port))
-
-# http://poe-rates.com/index.php?league=Abyss&item=Exalted%20Orb&interval=1h
