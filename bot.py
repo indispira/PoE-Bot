@@ -68,7 +68,6 @@ def index():
   if waiting_time > 7 and value == -1:
     content = 'The website take too long to respond, try again later.'
   elif number != 1:
-    # item_name = string.replace(item_name, "Orb", "Orbs")
     content = 'The %d %s cost %d chaos orbs at the moment.' % (number, item_name, int(value) * int(number))
   else:
     content = 'The %s cost %d chaos orbs at the moment.' % (item_name, int(value) * int(number))
