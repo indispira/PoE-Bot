@@ -43,15 +43,26 @@ def index():
     time_mode = 2
   print "Time bracket:", time
 
+  # Check if a specific league is asked
+  league = 'Abyss'
+  if 'league-name' in data['nlp']['entities'] and data['nlp']['entities']['league-name'][0]['value'].title() == 'Standard':
+    league = 'Standard'
+  elif 'mode' in data['nlp']['entities'] and data['nlp']['entities']['mode'][0]['value'].title() == 'Hardcore':
+    if 'league-name' in data['nlp']['entities'] and data['nlp']['entities']['league-name'][0]['value'].title() == 'Standard':
+      league = 'Hardcore'
+    else:
+      league = 'Hardcore%20Abyss'
+  print "League:", league
+
   # Call the page to be loaded
-  address = "http://poe-rates.com/index.php?league=Abyss&item="+item_addr+"&interval="+time
+  address = "http://poe-rates.com/index.php?league=" + league + "&item=" + item_addr + "&interval=" + time
   driver = webdriver.PhantomJS()
   print "Address:", address
 
   # Wait until the page is fully loaded
   waiting_time = 0
   value_median = -1
-  while value_median == -1 and waiting_time < 8:
+  while value_median == -1 and waiting_time < 5:
     waiting_time += 1
     driver.implicitly_wait(1)
     driver.get(address)
@@ -62,7 +73,7 @@ def index():
       print e.get_attribute('class')
       if e.get_attribute('class') == "value green-text":
         print e.text
-        value_median = e.text
+        value_median = float(e.text)
         break
     print "Median value:", value_median
 
@@ -107,20 +118,27 @@ def index():
 
     # Calculate the median value at the datetime or the start of duration
     scale = (last_value_min - last_value_median) / (float(value_median) - float(value_min))
-    value_median_at_date = int(float(value_median) + ((last_value_median - first_value_median) / scale))
+    value_median_at_date = float(value_median) + ((last_value_median - first_value_median) / scale)
     print "First median value of graph:", value_median_at_date
 
+    # Calculate evolution of the price upon the duration
+    evolution = ((value_median / value_median_at_date) - 1) * 100
+
   # Configure the content of the message
-  content = 'The '
-  if number != 1:
-    content += '%d ' % number
+  content = '%d ' % number
   if time_mode == 0:
-    content += '%s cost %d Chaos Orbs at the moment.' % (item_name, int(value_median) * int(number))
+    content += '%s cost %.1f Chaos Orbs for now.' % (item_name, value_median * float(number))
   elif time_mode == 1:
-    content += '%s cost %d Chaos Orbs %s ago.' % (item_name, value_median_at_date * int(number), date_ago_array[time])
+    content += '%s cost %.1f Chaos Orbs %s ago.' % (item_name, value_median_at_date * float(number), date_ago_array[time])
   else:
-    content += 'IN PROGRESS...'
-  if waiting_time > 7 and value_median == -1:
+    content += '%s cost %.1f Chaos Orbs %s ago and %.1f Chaos Orbs for now.' % (item_name, value_median_at_date * float(number), date_ago_array[time], value_median * float(number))
+    if evolution > 0:
+      content += '\nThe price has increased of %.1f%% in %s.' % (evolution, date_ago_array[time])
+    elif evolution < 0:
+      content += '\nThe price has decreased of %.1f%% in %s.' % (evolution * -1, date_ago_array[time])
+    else:
+      content += '\nThe price has not changed in %s.' % (date_ago_array[time])
+  if waiting_time > 4 and value_median == -1:
     content = 'The website take too long to respond, try again later.'
 
   # Return the message to Bot Builder
