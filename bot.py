@@ -16,6 +16,10 @@ def index():
   item_name = data['conversation']['memory']['item']['raw'].title()
   item_addr = string.replace(item_name, " ", "%20")
   item_addr = string.replace(item_addr, "Orbs", "Orb")
+  item_addr = string.replace(item_addr, "Mirrors", "Mirror")
+  price_unit = "Chaos Orbs"
+  if item_addr == "Mirror%20Of%20Kalandra":
+    price_unit = "Exalted Orbs"
   print "Item name:", item_name, " | Item address:", item_addr
 
   # Check if 'number' is present in the json
@@ -62,7 +66,7 @@ def index():
   # Wait until the page is fully loaded
   waiting_time = 0
   value_median = -1
-  while value_median == -1 and waiting_time < 5:
+  while value_median == -1 and waiting_time < 6:
     waiting_time += 1
     driver.implicitly_wait(1)
     driver.get(address)
@@ -128,18 +132,18 @@ def index():
   # Configure the content of the message
   content = '%d ' % number
   if time_mode == 0:
-    content += '%s cost %.1f Chaos Orbs for now.' % (item_name, value_median * float(number))
+    content += '%s cost %.1f %s for now.' % (item_name, value_median * float(number), price_unit)
   elif time_mode == 1:
-    content += '%s cost %.1f Chaos Orbs %s ago.' % (item_name, value_median_at_date * float(number), date_ago_array[time])
+    content += '%s cost %.1f %s %s ago.' % (item_name, value_median_at_date * float(number), price_unit, date_ago_array[time])
   else:
-    content += '%s cost %.1f Chaos Orbs %s ago and %.1f Chaos Orbs for now.' % (item_name, value_median_at_date * float(number), date_ago_array[time], value_median * float(number))
+    content += '%s cost %.1f %s %s ago and %.1f %s for now.' % (item_name, value_median_at_date * float(number), price_unit, date_ago_array[time], value_median * float(number), price_unit)
     if evolution > 0:
       content += '\nThe price has increased of %.1f%% in %s.' % (evolution, date_ago_array[time])
     elif evolution < 0:
       content += '\nThe price has decreased of %.1f%% in %s.' % (evolution * -1, date_ago_array[time])
     else:
       content += '\nThe price has not changed in %s.' % (date_ago_array[time])
-  if waiting_time > 4 and value_median == -1:
+  if waiting_time > 5 and value_median == -1:
     content = 'The website take too long to respond, try again later.'
 
   # Return the message to Bot Builder

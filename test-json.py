@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver import ActionChains
 import re
 
-item = "Exalted%20Orb"
+item = "Chaos%20Orb"
 datetime_array = {'hour':'1h', 'halfday':'12h', 'day':'1d', 'week':'7d'}
 
 def dump(obj):
@@ -41,50 +41,65 @@ while value_median == -1 and waiting_time < 8:
 			break
 	print value_median
 
-value_min = 0
-divs = driver.find_elements_by_tag_name('div')
-for d in divs:
-	tab = re.findall(r'\nMin [0-9.]*\n', d.text)
-	for s in tab:
-		if s[0] == '\n':
-			value_min = float(s[5:len(s) - 1])
-			break
-	if value_min != 0: break
-print value_min
+# tables = driver.find_elements_by_class_name('for-one-chaos')
+table = driver.find_element_by_class_name('currency-table')
+print table
+tbody = table.find_element_by_tag_name('tbody')
+print tbody
+trs = tbody.find_elements_by_tag_name('tr')
+print trs
+for tr in trs:
+	tds = tr.find_elements_by_tag_name('td')
+	for td in tds:
+		print td.text
+# for t in tables:
+# 	print "FOUND"
+# 	print len(t.text)
+
+# value_min = 0
+# divs = driver.find_elements_by_tag_name('div')
+# for d in divs:
+# 	tab = re.findall(r'\nMin [0-9.]*\n', d.text)
+# 	for s in tab:
+# 		if s[0] == '\n':
+# 			value_min = float(s[5:len(s) - 1])
+# 			break
+# 	if value_min != 0: break
+# print value_min
 
 # dump(driver)
-print "Graph test"
+# print "Graph test"
 # Catch the first and last value of the median price graph
-first_value_median = 0
-last_value_median = 0
-paths = driver.find_elements_by_tag_name('path')
-for path in paths:
-	if path.get_attribute('stroke') == '#00dddd' and path.get_attribute('d')[-9:] == 'M0,0 L0,0':
-		coords = path.get_attribute('d')
-		# print coords
-		first_value_median = float(coords[coords.find(',') + 1:coords.find(' ')])
-		coords = coords[:len(coords) - 10]
-		last_value_median = float(coords[coords.rfind(',') + 1:])
-		print first_value_median, last_value_median
-		break
+# first_value_median = 0
+# last_value_median = 0
+# paths = driver.find_elements_by_tag_name('path')
+# for path in paths:
+# 	if path.get_attribute('stroke') == '#00dddd' and path.get_attribute('d')[-9:] == 'M0,0 L0,0':
+# 		coords = path.get_attribute('d')
+# 		# print coords
+# 		first_value_median = float(coords[coords.find(',') + 1:coords.find(' ')])
+# 		coords = coords[:len(coords) - 10]
+# 		last_value_median = float(coords[coords.rfind(',') + 1:])
+# 		print first_value_median, last_value_median
+# 		break
 
 # Catch the first and last value of the min price graph
-first_value_min = 0
-last_value_min = 0
-for path in paths:
-	if path.get_attribute('stroke') == '#00dd00' and path.get_attribute('d')[-9:] == 'M0,0 L0,0':
-		coords = path.get_attribute('d')
-		# print coords
-		first_value_min = float(coords[coords.find(',') + 1:coords.find(' ')])
-		coords = coords[:len(coords) - 10]
-		last_value_min = float(coords[coords.rfind(',') + 1:])
-		print first_value_min, last_value_min
-		break
+# first_value_min = 0
+# last_value_min = 0
+# for path in paths:
+# 	if path.get_attribute('stroke') == '#00dd00' and path.get_attribute('d')[-9:] == 'M0,0 L0,0':
+# 		coords = path.get_attribute('d')
+# 		# print coords
+# 		first_value_min = float(coords[coords.find(',') + 1:coords.find(' ')])
+# 		coords = coords[:len(coords) - 10]
+# 		last_value_min = float(coords[coords.rfind(',') + 1:])
+# 		print first_value_min, last_value_min
+# 		break
 
-print "Calcul en cours"
-scale = (last_value_min - last_value_median) / (float(value_median) - float(value_min))
-value_median_at_date = float(value_median) + ((last_value_median - first_value_median) / scale)
-print int(value_median_at_date)
+# print "Calcul en cours"
+# scale = (last_value_min - last_value_median) / (float(value_median) - float(value_min))
+# value_median_at_date = float(value_median) + ((last_value_median - first_value_median) / scale)
+# print int(value_median_at_date)
 
 	# print path.get_attribute('stroke')
 # driver.set_window_size(1040, 720)
