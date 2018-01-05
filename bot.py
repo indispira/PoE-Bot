@@ -77,6 +77,7 @@ def index():
         break
     print "Median value:", value_median
 
+  # If the price asked is in the past, we need to calculate from the graph
   if time_mode != 0:
     # Catch the min value inside the html code
     value_min = 0
