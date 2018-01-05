@@ -10,8 +10,9 @@ datetime_array = {'hour':'1h', 'halfday':'12h', 'day':'1d', 'week':'7d'}
 
 def dump(obj):
    for attr in dir(obj):
-       if hasattr( obj, attr ):
-           print( "obj.%s = %s" % (attr, getattr(obj, attr)))
+   	print attr
+       # if hasattr( obj, attr ):
+       #     print( "obj.%s = %s" % (attr, getattr(obj, attr)))
 
 # if 'datetime' not in data['nlp']['entities'] and 'duration' not in data['nlp']['entities']:
 # 	time = '1h'
@@ -41,17 +42,24 @@ while value_median == -1 and waiting_time < 8:
 			break
 	print value_median
 
+print driver.page_source[:20000]
+tab = re.findall(r'<td style="border:none">\n            [0-9.]*        </td>', driver.page_source)
+for t in tab:
+	print t[37:len(t) - 13]
+# dump(driver)
+
+
 # tables = driver.find_elements_by_class_name('for-one-chaos')
-table = driver.find_element_by_class_name('currency-table')
-print table
-tbody = table.find_element_by_tag_name('tbody')
-print tbody
-trs = tbody.find_elements_by_tag_name('tr')
-print trs
-for tr in trs:
-	tds = tr.find_elements_by_tag_name('td')
-	for td in tds:
-		print td.text
+# table = driver.find_element_by_class_name('currency-table')
+# print table
+# tbody = table.find_element_by_tag_name('tbody')
+# print tbody
+# trs = tbody.find_elements_by_tag_name('tr')
+# print trs
+# for tr in trs:
+# 	tds = tr.find_elements_by_tag_name('td')
+# 	for td in tds:
+# 		print td.text
 # for t in tables:
 # 	print "FOUND"
 # 	print len(t.text)

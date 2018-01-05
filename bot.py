@@ -52,9 +52,6 @@ def index():
   if 'league-name' in data['nlp']['entities'] and data['nlp']['entities']['league-name'][0]['value'].title() == 'Standard':
     league = 'Standard'
   elif 'mode' in data['nlp']['entities'] and data['nlp']['entities']['mode'][0]['value'].title() == 'Hardcore':
-    if 'league-name' in data['nlp']['entities'] and data['nlp']['entities']['league-name'][0]['value'].title() == 'Standard':
-      league = 'Hardcore'
-    else:
       league = 'Hardcore%20Abyss'
   print "League:", league
 
@@ -62,6 +59,7 @@ def index():
   address = "http://poe-rates.com/index.php?league=" + league + "&item=" + item_addr + "&interval=" + time
   driver = webdriver.PhantomJS()
   print "Address:", address
+  league = string.replace(league, "%20", " ")
 
   # Wait until the page is fully loaded
   waiting_time = 0
@@ -82,7 +80,7 @@ def index():
     print "Median value:", value_median
 
   # If the price asked is in the past, we need to calculate from the graph
-  if time_mode != 0:
+  if time_mode != 0 and item_addr != "Chaos%20Orb":
     # Catch the min value inside the html code
     value_min = 0
     divs = driver.find_elements_by_tag_name('div')
@@ -129,22 +127,34 @@ def index():
     # Calculate evolution of the price upon the duration
     evolution = ((value_median / value_median_at_date) - 1) * 100
 
+  # If the requested item is the Chaos Orb, we inverse the search
+  if item_addr == "Chaos%20Orb":
+    tab = re.findall(r'<td style="border:none">\n            [0-9.]*        </td>', driver.page_source[:20000])
+    content = "With %d Chaos Orbs, you can buy:"
+    i = 0
+    list_currency = ['Orb of Alteration', 'Jeweller\'s Orb', 'Chromatic Orb', 'Orb of Chance', 'Cartographer\'s Chisel', 'Blessed Orb', 'Orb of Alchemy', 'Orb of Fusing', 'Orb of Scouring', 'Regal Orb', 'Vaal Orb', 'Orb of Regret', 'Gemcutter\'s Prism', 'Divine Orb', 'Exalted Orb']
+    for t in tab:
+      content += "\n - %.2f %s" % ((1 / float(t[37:len(t) - 13])) * number, list_currency[i])
+      print t[37:len(t) - 13]
+      i += 1
+
   # Configure the content of the message
-  content = '%d ' % number
-  if time_mode == 0:
-    content += '%s cost %.1f %s for now.' % (item_name, value_median * float(number), price_unit)
-  elif time_mode == 1:
-    content += '%s cost %.1f %s %s ago.' % (item_name, value_median_at_date * float(number), price_unit, date_ago_array[time])
   else:
-    content += '%s cost %.1f %s %s ago and %.1f %s for now.' % (item_name, value_median_at_date * float(number), price_unit, date_ago_array[time], value_median * float(number), price_unit)
-    if evolution > 0:
-      content += '\nThe price has increased of %.1f%% in %s.' % (evolution, date_ago_array[time])
-    elif evolution < 0:
-      content += '\nThe price has decreased of %.1f%% in %s.' % (evolution * -1, date_ago_array[time])
+    content = '%d ' % number
+    if time_mode == 0:
+      content += '%s cost %.1f %s for now in league %s.' % (item_name, value_median * float(number), price_unit, league)
+    elif time_mode == 1:
+      content += '%s cost %.1f %s %s ago in league %s.' % (item_name, value_median_at_date * float(number), price_unit, date_ago_array[time], league)
     else:
-      content += '\nThe price has not changed in %s.' % (date_ago_array[time])
-  if waiting_time > 5 and value_median == -1:
-    content = 'The website take too long to respond, try again later.'
+      content += '%s cost %.1f %s %s ago and %.1f %s for now in league %s.' % (item_name, value_median_at_date * float(number), price_unit, date_ago_array[time], value_median * float(number), price_unit, league)
+      if evolution > 0:
+        content += '\nThe price has increased of %.1f%% in %s.' % (evolution, date_ago_array[time])
+      elif evolution < 0:
+        content += '\nThe price has decreased of %.1f%% in %s.' % (evolution * -1, date_ago_array[time])
+      else:
+        content += '\nThe price has not changed in %s.' % (date_ago_array[time])
+    if waiting_time > 5 and value_median == -1:
+      content = 'The website take too long to respond, try again later.'
 
   # Return the message to Bot Builder
   return jsonify( 
